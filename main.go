@@ -1,9 +1,11 @@
 package main
 
 import (
+	"fmt"
 	"html/template"
 	"io"
 	"io/fs"
+	"log"
 	"net/http"
 	"path/filepath"
 
@@ -15,7 +17,12 @@ type Templates struct {
 }
 
 func (t *Templates) Render(w io.Writer, name string, data interface{}, c echo.Context) error {
-	return t.templates.ExecuteTemplate(w, name, data)
+	if err := t.templates.ExecuteTemplate(w, name, data); err != nil {
+		log.Fatal(err)
+		return err
+	}
+
+	return nil
 }
 
 func NewTemplate() *Templates {
@@ -26,6 +33,7 @@ func NewTemplate() *Templates {
 			return err
 		}
 		if !info.IsDir() && filepath.Ext(path) == ".html" {
+			fmt.Println(path)
 			tmpl.ParseFiles(path)
 		}
 

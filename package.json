@@ -4,12 +4,22 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "node node_modules/webpack/bin/webpack.js --progress"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "monaco-editor": "^0.48.0",
     "tailwindcss": "^3.4.3"
+  },
+  "devDependencies": {
+    "css-loader": "^7.1.1",
+    "file-loader": "^6.2.0",
+    "monaco-editor-webpack-plugin": "^7.1.0",
+    "style-loader": "^4.0.0",
+    "webpack": "^5.91.0",
+    "webpack-cli": "^5.1.4"
   }
 }
