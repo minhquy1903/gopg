@@ -1,7 +1,5 @@
 import * as monaco from 'monaco-editor';
 
-
-
 monaco.editor.create(document.getElementById('container'), {
   value: [`
 package main
@@ -14,5 +12,5 @@ func main() {
 	fmt.Println("Hello World")
 }
 `].join('\n'),
-  language: 'go'
+  language: 'go',
 });
