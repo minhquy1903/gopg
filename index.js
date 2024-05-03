@@ -1,16 +1,31 @@
 import * as monaco from 'monaco-editor';
 
-monaco.editor.create(document.getElementById('container'), {
-  value: [`
-package main
+(function () {
+  console.log("Init Monaco Editor");
 
-import (
-	"fmt"
-)
+  const initValue =
+    `package main
+  
+  import (
+    "fmt"
+  )
+  
+  func main() {
+    fmt.Println("Hello World")
+  }
+  `
 
-func main() {
-	fmt.Println("Hello World")
-}
-`].join('\n'),
-  language: 'go',
-});
+  const themeSelect = document.getElementById('theme-select');
+
+  themeSelect.addEventListener('change', (e) => {
+    console.log("change theme: ", e.target.value);
+    monaco.editor.setTheme(e.target.value);
+  })
+
+
+  monaco.editor.create(document.getElementById('container'), {
+    value: initValue,
+    language: 'go',
+    theme: 'vs-dark'
+  });
+})();

@@ -60,5 +60,13 @@ func main() {
 		return c.Render(http.StatusOK, "index", map[string]interface{}{})
 	})
 
+	e.POST("/run", func(c echo.Context) error {
+		code := c.FormValue("code")
+		fmt.Println(code)
+		return c.Render(http.StatusOK, "index", map[string]interface{}{
+			"code": code,
+		})
+	})
+
 	e.Start(":3000")
 }
