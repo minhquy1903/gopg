@@ -8,7 +8,7 @@ export default function GlobalContextProvider(props) {
     theme: "vs",
   });
 
-  const [code, setCode] = createSignal("");
+  const [code, setCode] = createSignal();
 
   return (
     <GlobalContext.Provider value={{ global, setGlobal, code, setCode }}>
