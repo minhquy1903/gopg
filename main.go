@@ -4,6 +4,8 @@ import (
 	"bufio"
 	"fmt"
 	"net/http"
+	"os"
+	"os/exec"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -27,9 +29,55 @@ func main() {
 			})
 		}
 		// Print the body string
-		fmt.Println(string(buf))
+		file, err := os.CreateTemp("", "temp*.go")
 
-		return c.JSON(http.StatusOK, map[string]interface{}{})
+		if err != nil {
+			return err
+		}
+
+		defer file.Close()
+
+		n, err := file.WriteString(string(`package main
+
+		import (
+			"fmt"
+		)
+		
+		func main() {
+			fmt.Println("Hello World")
+		}`))
+
+		r2 := bufio.NewReader(file)
+
+		r2.Read(buf)
+
+		fmt.Println("buf", string(buf))
+
+		if err != nil {
+			return err
+		}
+
+		fmt.Println("n", n)
+		fmt.Println("filename", file.Name())
+
+		// Compile and execute the Go code
+		cmd := exec.Command("go", "run", file.Name())
+
+		output, err := cmd.CombinedOutput()
+
+		if err != nil {
+			fmt.Printf("Error: %s\n", err)
+
+			return c.JSON(http.StatusInternalServerError, map[string]interface{}{
+				"error": err.Error(),
+			})
+		}
+
+		// Print the output
+		fmt.Printf("Output: %s\n", output)
+
+		// Send the output back to the frontend
+		return c.String(200, string(output))
 	})
 
 	e.Start(":8000")
