@@ -8,27 +8,11 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
+	"github.com/minhquy1903/gopg/internal"
 	"github.com/minhquy1903/gopg/internal/goplay"
 )
 
 // Middleware function to add CORS headers to responses
-func addCORSHeaders(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Set CORS headers
-		w.Header().Set("Access-Control-Allow-Origin", "*")
-		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
-
-		// Handle preflight OPTIONS requests
-		if r.Method == http.MethodOptions {
-			w.WriteHeader(http.StatusOK)
-			return
-		}
-
-		// Serve next handler in the chain
-		next.ServeHTTP(w, r)
-	})
-}
 
 func main() {
 	// Start HTTP server
@@ -43,14 +27,13 @@ func startServer() {
 	r := mux.NewRouter()
 	apiRouter := r.PathPrefix("/api").Subrouter()
 	// Add CORS middleware
-	addCORSHeaders(r)
 
 	goplay.NewGoPlayHandler().Routes(apiRouter)
 
 	// Initialize server
 	server := &http.Server{
 		Addr:         ":8000",
-		Handler:      addCORSHeaders(r),
+		Handler:      internal.AddCORSHeaders(r),
 		ReadTimeout:  5 * time.Second,
 		WriteTimeout: 10 * time.Second,
 		IdleTimeout:  15 * time.Second,
