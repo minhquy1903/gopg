@@ -1,0 +1,1 @@
+FROM --platform=go1.16 alpine:3.14

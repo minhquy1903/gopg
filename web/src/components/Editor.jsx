@@ -28,14 +28,14 @@ self.MonacoEnvironment = {
 };
 
 const apiRunCode = (code) => {
-  fetch("http://localhost:8000/run", {
+  fetch("http://localhost:8000/api/run", {
     method: "POST",
     headers: {
-      "Content-Type": "application/json",
+      "Content-Type": "application/text",
     },
     body: code,
   })
-    .then((res) => res.json())
+    .then((res) => res.text())
     .then((data) => {
       console.log(data);
     });
