@@ -98,21 +98,3 @@ func (wp *WorkerPool) AddJob(job Job) {
 func (wp *WorkerPool) Wait() {
 	wp.WaitGroup.Wait()
 }
-
-func main() {
-	numWorkers := 3
-	numJobs := 5
-
-	// Create a new worker pool
-	pool := NewWorkerPool(numWorkers)
-	// Start the worker pool
-	pool.Run()
-
-	// Add jobs to the worker pool
-	for i := 1; i <= numJobs; i++ {
-		pool.AddJob(Job{ID: i, JobData: nil})
-	}
-
-	// Wait for all jobs to finish
-	pool.Wait()
-}
