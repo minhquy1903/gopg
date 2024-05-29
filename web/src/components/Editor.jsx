@@ -121,7 +121,7 @@ export default function Monaco() {
       <div
         id="editor"
         style={{
-          height: "600px",
+          height: "1000px",
           width: "100vw",
         }}
       ></div>
