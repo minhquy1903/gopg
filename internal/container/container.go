@@ -29,8 +29,14 @@ func NewContainer() *Container {
 }
 
 func (c *Container) Start() {
-	cmd := exec.Command("./bin/run execution_file", "-rf", c.Root)
-	cmd.Run()
+	cmd := exec.Command("./bin/run execution_file")
+	output, err := cmd.CombinedOutput()
+
+	if err != nil {
+		fmt.Printf("error %v", err)
+	}
+
+	fmt.Printf("Output %v", output)
 }
 
 func (c *Container) Destroy() {

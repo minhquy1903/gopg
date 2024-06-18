@@ -12,8 +12,6 @@ import (
 	"github.com/minhquy1903/gopg/internal/goplay"
 )
 
-// Middleware function to add CORS headers to responses
-
 func main() {
 	// Start HTTP server
 	startServer()
