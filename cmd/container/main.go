@@ -17,9 +17,9 @@ func main() {
 }
 
 func run() {
-	fmt.Printf("Running %v as PID %d\n", os.Args[2:], os.Getpid())
+	fmt.Printf("Running %v as PID %d\n", os.Args[3:], os.Getpid())
 
-	args := append([]string{"child"}, os.Args[2:]...)
+	args := append([]string{"child"}, os.Args[3:]...)
 
 	cmd := exec.Command("/proc/self/exe", args...)
 	cmd.Stdin = os.Stdin
@@ -33,10 +33,8 @@ func run() {
 }
 
 func child() {
-	fmt.Printf("Running %v as PID %d\n", os.Args[2:], os.Getpid())
-
 	// Set hostname of the new UTS namespace
-	if err := syscall.Chroot("/home/quydz/rootfs"); err != nil {
+	if err := syscall.Chroot(os.Args[2]); err != nil {
 		fmt.Println("Error changing root:", err)
 		os.Exit(1)
 	}
@@ -53,13 +51,14 @@ func child() {
 		os.Exit(1)
 	}
 
-	cmd := exec.Command(os.Args[2], os.Args[3:]...)
-	cmd.Stdin = os.Stdin
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
+	cmd := exec.Command(os.Args[3], os.Args[4:]...)
 
-	if err := cmd.Run(); err != nil {
-		fmt.Println("Error running the child command:", err)
-		os.Exit(1)
+	output, err := cmd.CombinedOutput()
+
+	if err != nil {
+		fmt.Println("Execute code error", err)
+		os.Exit(0)
 	}
+
+	fmt.Println(string(output))
 }

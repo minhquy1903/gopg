@@ -3,3 +3,6 @@ css:
 
 css-watch:
 	npx tailwindcss -i ./styles.css -o ./public/css/styles.css --watch
+
+server:
+	go build 

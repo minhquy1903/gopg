@@ -28,8 +28,10 @@ func NewContainer() *Container {
 	}
 }
 
-func (c *Container) Start() {
-	cmd := exec.Command("./bin/run execution_file")
+func (c *Container) Start() []byte {
+	execFile := fmt.Sprintf("exec_file_%v", c.ID)
+
+	cmd := exec.Command("./bin/run", execFile)
 	output, err := cmd.CombinedOutput()
 
 	if err != nil {
@@ -37,6 +39,7 @@ func (c *Container) Start() {
 	}
 
 	fmt.Printf("Output %v", output)
+	return output
 }
 
 func (c *Container) Destroy() {

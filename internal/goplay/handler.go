@@ -7,6 +7,7 @@ import (
 	"os/exec"
 
 	"github.com/gorilla/mux"
+	"github.com/minhquy1903/gopg/internal/container"
 )
 
 const (
@@ -60,15 +61,19 @@ func (h *GoPlayHandler) handleRun(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Compile and execute the Go code
-	cmd := exec.Command("go", "run", file.Name())
+	cmd := exec.Command("go", "build", "-o", "./bin", file.Name())
 
-	output, err := cmd.CombinedOutput()
+	_, err = cmd.CombinedOutput()
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
+	container := container.NewContainer()
+
+	container.Destroy()
+
 	// Send the output back to the frontend
-	w.Write(output)
+	w.Write(container.Start())
 }
