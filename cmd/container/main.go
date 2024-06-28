@@ -2,12 +2,41 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"os/exec"
 	"syscall"
 )
 
+type Setting struct {
+	RootFS string
+}
+
+func loadSetting() *Setting {
+	rootfs := os.Args[2]
+
+	return &Setting{
+		RootFS: rootfs,
+	}
+}
+
+func initFS(root string) {
+	baseDir := "./rootfs"
+	newDir := fmt.Sprintf("/tmp/container/%v", root)
+
+	cmd := exec.Command("cp", "--recursive", baseDir, newDir)
+	err := cmd.Run()
+
+	if err != nil {
+		log.Fatal("init file system error: %w", err)
+	}
+}
+
 func main() {
+	setting := loadSetting()
+
+	initFS(setting.RootFS)
+
 	switch os.Args[1] {
 	case "child":
 		child()

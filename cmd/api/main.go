@@ -57,8 +57,7 @@ func startServer() {
 	// logger.Infof("Listening on %q", server.Addr)
 	log.Default().Printf("Listening on %q", server.Addr)
 	if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+		log.Fatal(err)
 		// return fmt.Errorf("cannot start server on %q: %s", server.Addr, err)
 	}
-
-	return
 }

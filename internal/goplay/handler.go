@@ -6,8 +6,8 @@ import (
 	"os"
 	"os/exec"
 
+	"github.com/google/uuid"
 	"github.com/gorilla/mux"
-	"github.com/minhquy1903/gopg/internal/container"
 )
 
 const (
@@ -59,9 +59,9 @@ func (h *GoPlayHandler) handleRun(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
-
+	name := uuid.NewString()
 	// Compile and execute the Go code
-	cmd := exec.Command("go", "build", "-o", "./bin", file.Name())
+	cmd := exec.Command("go", "build", "-o", "./bin/"+name, file.Name())
 
 	_, err = cmd.CombinedOutput()
 
@@ -70,10 +70,11 @@ func (h *GoPlayHandler) handleRun(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	container := container.NewContainer()
+	// container := container.NewContainer()
 
-	container.Destroy()
+	// container.Destroy()
 
-	// Send the output back to the frontend
-	w.Write(container.Start())
+	// // Send the output back to the frontend
+	// w.Write(container.Start())
+	w.Write([]byte("hello"))
 }
