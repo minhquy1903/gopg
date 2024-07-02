@@ -2,12 +2,14 @@ package goplay
 
 import (
 	"bytes"
+	"fmt"
 	"net/http"
 	"os"
 	"os/exec"
 
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
+	"github.com/minhquy1903/gopg/internal/container"
 )
 
 const (
@@ -59,9 +61,11 @@ func (h *GoPlayHandler) handleRun(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
-	name := uuid.NewString()
+
+	execPath := fmt.Sprintf("./bin/%v", uuid.NewString())
+
 	// Compile and execute the Go code
-	cmd := exec.Command("go", "build", "-o", "./bin/"+name, file.Name())
+	cmd := exec.Command("go", "build", "-o", execPath, file.Name())
 
 	_, err = cmd.CombinedOutput()
 
@@ -70,8 +74,8 @@ func (h *GoPlayHandler) handleRun(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// container := container.NewContainer()
-
+	container := container.NewContainer(execPath)
+	container.Start()
 	// container.Destroy()
 
 	// // Send the output back to the frontend

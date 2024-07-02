@@ -8,23 +8,18 @@ import (
 )
 
 type Container struct {
-	ID     string
-	Status string
-	Root   string
+	ID       string
+	Status   string
+	Root     string
+	ExecFile string
 }
 
-func NewContainer() *Container {
+func NewContainer(execFile string) *Container {
 	cid := uuid.NewString()
 
-	oldDir := "./rootfs"
-	newDir := fmt.Sprintf("/tmp/container/%v", cid)
-
-	cmd := exec.Command("cp", "--recursive", oldDir, newDir)
-	cmd.Run()
-
 	return &Container{
-		Root: newDir,
-		ID:   cid,
+		ID:       cid,
+		ExecFile: execFile,
 	}
 }
 
