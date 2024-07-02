@@ -74,11 +74,13 @@ func (h *GoPlayHandler) handleRun(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	container := container.NewContainer(execPath)
-	container.Start()
+	rootfs := "container_root_" + uuid.NewString()
+
+	container := container.NewContainer(rootfs, execPath)
+	output := container.Run()
 	// container.Destroy()
 
 	// // Send the output back to the frontend
 	// w.Write(container.Start())
-	w.Write([]byte("hello"))
+	w.Write(output)
 }

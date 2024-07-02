@@ -14,26 +14,72 @@ type Container struct {
 	ExecFile string
 }
 
-func NewContainer(execFile string) *Container {
+const (
+	TEMPL_DIR = "./rootfs"
+	BASE_ROOT = "/tmp/container"
+)
+
+func NewContainer(rootfs, execFile string) *Container {
 	cid := uuid.NewString()
+	root := fmt.Sprintf("%v/%v", BASE_ROOT, rootfs)
 
 	return &Container{
 		ID:       cid,
 		ExecFile: execFile,
+		Root:     root,
 	}
 }
 
-func (c *Container) Start() []byte {
-	execFile := fmt.Sprintf("exec_file_%v", c.ID)
+// Copy filesystem into new root directory
+func (c Container) initFS() error {
+	cmd := exec.Command("cp", "--recursive", TEMPL_DIR, c.Root)
 
-	cmd := exec.Command("./bin/run", execFile)
+	return cmd.Run()
+}
+
+// Copy exec file into new root directory
+func (c Container) copyExecFile() error {
+	cmd := exec.Command("cp", c.ExecFile, c.Root)
+	return cmd.Run()
+}
+
+// Execute file
+func (c Container) execFile() ([]byte, error) {
+	cmd := exec.Command("./bin/run", c.Root, c.ExecFile)
+	fmt.Println(cmd.String())
+
 	output, err := cmd.CombinedOutput()
 
 	if err != nil {
-		fmt.Printf("error %v", err)
+		return nil, err
 	}
 
-	fmt.Printf("Output %v", output)
+	return output, nil
+}
+
+// Run the container
+func (c *Container) Run() []byte {
+	err := c.initFS()
+
+	if err != nil {
+		fmt.Printf("init filesystem fail: %v", err)
+		return nil
+	}
+
+	err = c.copyExecFile()
+
+	if err != nil {
+		fmt.Printf("copy exec file into container fail: %v", err)
+		return nil
+	}
+
+	output, err := c.execFile()
+
+	if err != nil {
+		fmt.Printf("fail to exec file: %v", err)
+		return nil
+	}
+
 	return output
 }
 
