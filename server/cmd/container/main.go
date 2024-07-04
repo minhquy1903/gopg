@@ -36,6 +36,8 @@ func run() {
 
 func child() {
 	// Set hostname of the new UTS namespace
+	fmt.Println("root", rootfs)
+
 	if err := syscall.Chroot(rootfs); err != nil {
 		fmt.Println("Error changing root:", err)
 		os.Exit(1)

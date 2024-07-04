@@ -62,7 +62,7 @@ func (h *GoPlayHandler) handleRun(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 
-	execPath := fmt.Sprintf("./bin/%v", uuid.NewString())
+	execPath := fmt.Sprintf("./exec_%v", uuid.NewString())
 
 	// Compile and execute the Go code
 	cmd := exec.Command("go", "build", "-o", execPath, file.Name())
@@ -74,7 +74,7 @@ func (h *GoPlayHandler) handleRun(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	rootfs := "container_root_" + uuid.NewString()
+	rootfs := uuid.NewString()
 
 	container := container.NewContainer(rootfs, execPath)
 	output := container.Run()

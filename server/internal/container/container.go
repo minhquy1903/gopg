@@ -2,6 +2,7 @@ package container
 
 import (
 	"fmt"
+	"os"
 	"os/exec"
 
 	"github.com/google/uuid"
@@ -15,7 +16,7 @@ type Container struct {
 }
 
 const (
-	TEMPL_DIR = "./rootfs"
+	TEMPL_DIR = "./image"
 	BASE_ROOT = "/tmp/container"
 )
 
@@ -45,16 +46,18 @@ func (c Container) copyExecFile() error {
 
 // Execute file
 func (c Container) execFile() ([]byte, error) {
-	cmd := exec.Command("./bin/run", c.Root, c.ExecFile)
+	cmd := exec.Command("./bin/container", "run", c.Root, c.ExecFile)
 	fmt.Println(cmd.String())
-
-	output, err := cmd.CombinedOutput()
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	err := cmd.Run()
 
 	if err != nil {
 		return nil, err
 	}
 
-	return output, nil
+	return nil, nil
 }
 
 // Run the container

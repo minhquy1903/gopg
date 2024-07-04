@@ -12,7 +12,9 @@ RUN go mod download
 COPY . .
 
 # Build the Go application
-RUN CGO_ENABLED=0 GOOS=linux go build -o ./bin/gopb ./cmd/api/main.go
+RUN mkdir -p /tmp/container
+RUN CGO_ENABLED=0 GOOS=linux go build -o ./bin/gopg ./cmd/api/main.go
 RUN CGO_ENABLED=0 GOOS=linux go build -o ./bin/container ./cmd/container/main.go
 
 
+CMD ["/app/bin/gopg"]
