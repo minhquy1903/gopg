@@ -7,9 +7,9 @@ import (
 	"os"
 	"os/exec"
 
-	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	"github.com/minhquy1903/gopg/internal/container"
+	"github.com/minhquy1903/gopg/pkg/nanoid"
 )
 
 const (
@@ -62,7 +62,7 @@ func (h *GoPlayHandler) handleRun(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 
-	execPath := fmt.Sprintf("./exec_%v", uuid.NewString())
+	execPath := fmt.Sprintf("./exec_%v", nanoid.NewNanoId())
 
 	// Compile and execute the Go code
 	cmd := exec.Command("go", "build", "-o", execPath, file.Name())
@@ -74,7 +74,7 @@ func (h *GoPlayHandler) handleRun(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	rootfs := uuid.NewString()
+	rootfs := nanoid.NewNanoId()
 
 	container := container.NewContainer(rootfs, execPath)
 	output := container.Run()

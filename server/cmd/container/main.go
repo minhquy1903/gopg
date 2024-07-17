@@ -21,7 +21,7 @@ func main() {
 }
 
 func run() {
-	args := append([]string{"child"}, os.Args[2:]...)
+	args := append([]string{"child"}, os.Args[3:]...)
 
 	cmd := exec.Command("/proc/self/exe", args...)
 	cmd.Stdin = os.Stdin
@@ -50,10 +50,10 @@ func child() {
 	}
 
 	// Mount proc. This needs to be done after chroot and chdir.
-	if err := syscall.Mount("proc", "proc", "proc", 0, ""); err != nil {
-		fmt.Println("Error mounting proc:", err)
-		os.Exit(1)
-	}
+	// if err := syscall.Mount("proc", "proc", "proc", 0, ""); err != nil {
+	// 	fmt.Println("Error mounting proc:", err)
+	// 	os.Exit(1)
+	// }
 
 	cmd := exec.Command(os.Args[3], os.Args[4:]...)
 

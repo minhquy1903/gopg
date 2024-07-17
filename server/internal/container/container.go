@@ -5,7 +5,7 @@ import (
 	"os"
 	"os/exec"
 
-	"github.com/google/uuid"
+	"github.com/minhquy1903/gopg/pkg/nanoid"
 )
 
 type Container struct {
@@ -21,7 +21,7 @@ const (
 )
 
 func NewContainer(rootfs, execFile string) *Container {
-	cid := uuid.NewString()
+	cid := nanoid.NewNanoId()
 	root := fmt.Sprintf("%v/%v", BASE_ROOT, rootfs)
 
 	return &Container{

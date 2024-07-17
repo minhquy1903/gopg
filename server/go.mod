@@ -6,3 +6,5 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/gorilla/mux v1.8.1
 )
+
+require github.com/matoous/go-nanoid/v2 v2.1.0 // indirect

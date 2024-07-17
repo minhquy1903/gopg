@@ -5,5 +5,3 @@ services:
     build: "./server"
     ports:
       - 8000:8000
-    cap_add:
-      - SYS_CHROOT
