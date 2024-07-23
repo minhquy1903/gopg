@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"os"
 	"os/exec"
@@ -21,7 +22,7 @@ func main() {
 }
 
 func run() {
-	args := append([]string{"child"}, os.Args[3:]...)
+	args := append([]string{"child"}, os.Args[2:]...)
 
 	cmd := exec.Command("/proc/self/exe", args...)
 	cmd.Stdin = os.Stdin
@@ -36,7 +37,6 @@ func run() {
 
 func child() {
 	// Set hostname of the new UTS namespace
-	fmt.Println("root", rootfs)
 
 	if err := syscall.Chroot(rootfs); err != nil {
 		fmt.Println("Error changing root:", err)
@@ -49,6 +49,8 @@ func child() {
 		os.Exit(1)
 	}
 
+	writer := bufio.NewWriter(f)
+
 	// Mount proc. This needs to be done after chroot and chdir.
 	// if err := syscall.Mount("proc", "proc", "proc", 0, ""); err != nil {
 	// 	fmt.Println("Error mounting proc:", err)
@@ -56,13 +58,13 @@ func child() {
 	// }
 
 	cmd := exec.Command(os.Args[3], os.Args[4:]...)
-
-	output, err := cmd.CombinedOutput()
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	err := cmd.Run()
 
 	if err != nil {
 		fmt.Println("Execute code error", err)
 		os.Exit(0)
 	}
-
-	fmt.Println(string(output))
 }

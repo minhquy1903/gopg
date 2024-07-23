@@ -47,7 +47,7 @@ func (c Container) copyExecFile() error {
 // Execute file
 func (c Container) execFile() ([]byte, error) {
 	cmd := exec.Command("./bin/container", "run", c.Root, c.ExecFile)
-	fmt.Println(cmd.String())
+
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
