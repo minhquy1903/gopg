@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
 	"os"
 	"os/exec"
@@ -48,8 +47,6 @@ func child() {
 		fmt.Println("Error changing working directory:", err)
 		os.Exit(1)
 	}
-
-	writer := bufio.NewWriter(f)
 
 	// Mount proc. This needs to be done after chroot and chdir.
 	// if err := syscall.Mount("proc", "proc", "proc", 0, ""); err != nil {

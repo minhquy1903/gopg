@@ -1,6 +1,7 @@
 package container
 
 import (
+	"bytes"
 	"fmt"
 	"os"
 	"os/exec"
@@ -48,8 +49,9 @@ func (c Container) copyExecFile() error {
 func (c Container) execFile() ([]byte, error) {
 	cmd := exec.Command("./bin/container", "run", c.Root, c.ExecFile)
 
+	var stdout bytes.Buffer
 	cmd.Stdin = os.Stdin
-	cmd.Stdout = os.Stdout
+	cmd.Stdout = &stdout
 	cmd.Stderr = os.Stderr
 	err := cmd.Run()
 
@@ -57,7 +59,7 @@ func (c Container) execFile() ([]byte, error) {
 		return nil, err
 	}
 
-	return nil, nil
+	return stdout.Bytes(), nil
 }
 
 // Run the container

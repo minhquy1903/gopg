@@ -78,6 +78,8 @@ func (h *GoPlayHandler) handleRun(w http.ResponseWriter, r *http.Request) {
 
 	container := container.NewContainer(rootfs, execPath)
 	output := container.Run()
+
+	fmt.Println(string(output))
 	// container.Destroy()
 
 	// // Send the output back to the frontend
