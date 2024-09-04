@@ -30,59 +30,89 @@ func (h *GoPlayHandler) Routes(r *mux.Router) {
 }
 
 func (h *GoPlayHandler) handleRun(w http.ResponseWriter, r *http.Request) {
-	// Read the body of the request
+	// Read the request body
+	code, err := readRequestBody(r)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	// Create a temporary file
+	file, err := createTempFile(code)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	defer cleanupTempFile(file)
+
+	// Compile the code
+	execPath, err := compileCode(file.Name())
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	defer os.Remove(execPath)
+
+	// Run the code in a container
+	output, err := runInContainer(execPath)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Send the output back to the frontend
+	w.Write(output)
+}
+
+func readRequestBody(r *http.Request) ([]byte, error) {
 	var buf bytes.Buffer
-
 	buf.Grow(BUFFER_SIZE)
-	defer r.Body.Close()
-
-	_, err := buf.ReadFrom(r.Body) //io.Copy(&buf, io.LimitReader(r.Body, BUFFER_SIZE+1))
-
+	_, err := buf.ReadFrom(r.Body)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+		return nil, err
 	}
+	return buf.Bytes(), nil
+}
 
-	// // Print the body string
+func createTempFile(code []byte) (*os.File, error) {
 	file, err := os.CreateTemp("", "temp*.go")
-
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+		return nil, err
 	}
-
-	defer func() {
-		os.Remove(file.Name())
+	_, err = file.Write(code)
+	if err != nil {
 		file.Close()
-	}()
-
-	_, err = file.Write(buf.Bytes())
-
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		os.Remove(file.Name())
+		return nil, err
 	}
+	return file, nil
+}
 
+func cleanupTempFile(file *os.File) {
+	file.Close()
+	os.Remove(file.Name())
+}
+
+func compileCode(filename string) (string, error) {
 	execPath := fmt.Sprintf("./exec_%v", nanoid.NewNanoId())
+	cmd := exec.Command("go", "build", "-o", execPath, filename)
+	if output, err := cmd.CombinedOutput(); err != nil {
+		return "", fmt.Errorf("compilation error: %v\n%s", err, output)
+	}
+	return execPath, nil
+}
 
-	// Compile and execute the Go code
-	cmd := exec.Command("go", "build", "-o", execPath, file.Name())
-
-	_, err = cmd.CombinedOutput()
+func runInContainer(execPath string) ([]byte, error) {
+	rootfs := nanoid.NewNanoId()
+	container := container.NewContainer(rootfs, execPath)
+	output, err := container.Run()
 
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+		return nil, fmt.Errorf("failed to run in container: %w", err)
 	}
-
-	rootfs := nanoid.NewNanoId()
-
-	container := container.NewContainer(rootfs, execPath)
-	output := container.Run()
 
 	fmt.Println(string(output))
-	// container.Destroy()
 
-	// // Send the output back to the frontend
-	// w.Write(container.Start())
-	w.Write(output)
+	container.Destroy()
+	return output, nil
 }

@@ -5,8 +5,14 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
 
 	"github.com/minhquy1903/gopg/pkg/nanoid"
+)
+
+const (
+	templDir = "./image"
+	baseRoot = "/tmp/container"
 )
 
 type Container struct {
@@ -16,79 +22,55 @@ type Container struct {
 	ExecFile string
 }
 
-const (
-	TEMPL_DIR = "./image"
-	BASE_ROOT = "/tmp/container"
-)
-
 func NewContainer(rootfs, execFile string) *Container {
-	cid := nanoid.NewNanoId()
-	root := fmt.Sprintf("%v/%v", BASE_ROOT, rootfs)
-
 	return &Container{
-		ID:       cid,
+		ID:       nanoid.NewNanoId(),
 		ExecFile: execFile,
-		Root:     root,
+		Root:     filepath.Join(baseRoot, rootfs),
 	}
 }
 
-// Copy filesystem into new root directory
-func (c Container) initFS() error {
-	cmd := exec.Command("cp", "--recursive", TEMPL_DIR, c.Root)
+// Run executes the container lifecycle
+func (c *Container) Run() ([]byte, error) {
+	if err := c.initFS(); err != nil {
+		return nil, fmt.Errorf("init filesystem failed: %w", err)
+	}
 
-	return cmd.Run()
+	if err := c.copyExecFile(); err != nil {
+		return nil, fmt.Errorf("copy exec file into container failed: %w", err)
+	}
+
+	return c.execFile()
 }
 
-// Copy exec file into new root directory
-func (c Container) copyExecFile() error {
-	cmd := exec.Command("cp", c.ExecFile, c.Root)
-	return cmd.Run()
+// Destroy removes the container's root directory
+func (c *Container) Destroy() error {
+	return os.RemoveAll(c.Root)
 }
 
-// Execute file
-func (c Container) execFile() ([]byte, error) {
+func (c *Container) initFS() error {
+	return exec.Command("cp", "-r", templDir, c.Root).Run()
+}
+
+func (c *Container) copyExecFile() error {
+	return exec.Command("cp", c.ExecFile, c.Root).Run()
+}
+
+func (c *Container) execFile() ([]byte, error) {
 	cmd := exec.Command("./bin/container", "run", c.Root, c.ExecFile)
-
-	var stdout bytes.Buffer
-	cmd.Stdin = os.Stdin
+	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout
-	cmd.Stderr = os.Stderr
+	cmd.Stderr = &stderr
+
 	err := cmd.Run()
+	output := stdout.Bytes()
 
 	if err != nil {
-		return nil, err
+		// Append stderr to output if there's an error
+		output = append(output, '\n')
+		output = append(output, stderr.Bytes()...)
+		return output, fmt.Errorf("failed to exec file: %w", err)
 	}
 
-	return stdout.Bytes(), nil
-}
-
-// Run the container
-func (c *Container) Run() []byte {
-	err := c.initFS()
-
-	if err != nil {
-		fmt.Printf("init filesystem fail: %v", err)
-		return nil
-	}
-
-	err = c.copyExecFile()
-
-	if err != nil {
-		fmt.Printf("copy exec file into container fail: %v", err)
-		return nil
-	}
-
-	output, err := c.execFile()
-
-	if err != nil {
-		fmt.Printf("fail to exec file: %v", err)
-		return nil
-	}
-
-	return output
-}
-
-func (c *Container) Destroy() {
-	cmd := exec.Command("rm", "-rf", c.Root)
-	cmd.Run()
+	return output, nil
 }
