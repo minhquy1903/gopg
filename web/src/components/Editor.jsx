@@ -59,6 +59,107 @@ export default function Monaco() {
       insertSpaces: true,
       theme: theme,
     });
+
+    monaco.languages.registerCompletionItemProvider("go", {
+      provideCompletionItems: function (model, position) {
+        var textUntilPosition = model.getValueInRange({
+          startLineNumber: 1,
+          startColumn: 1,
+          endLineNumber: position.lineNumber,
+          endColumn: position.column,
+        });
+
+        // Check if the user is typing "fm"
+        var match = textUntilPosition.match(/fm/);
+        if (!match) {
+          return { suggestions: [] };
+        }
+
+        // Get the entire code
+        var fullText = model.getValue();
+
+        // Check if there is an existing import block
+        var importBlockRegex = /import\s*\(\s*([^)]+)\s*\)/;
+        var importBlockMatch = fullText.match(importBlockRegex);
+
+        var additionalTextEdits = [];
+        if (importBlockMatch) {
+          // If an import block exists, append the new package to it
+          var importBlockRange = findImportBlockRange(fullText);
+          var existingImports = importBlockMatch[1].trim();
+          var newImports = existingImports + '\n\t"fmt"';
+
+          additionalTextEdits.push({
+            range: importBlockRange,
+            text: `import (\n\t${newImports}\n)`,
+          });
+        } else {
+          // If no import block exists, create a new one
+          var insertPosition = findInsertPosition(fullText);
+          additionalTextEdits.push({
+            range: new monaco.Range(
+              insertPosition.line,
+              1,
+              insertPosition.line,
+              1,
+            ),
+            text: 'import (\n\t"fmt"\n)\n\n',
+          });
+        }
+
+        return {
+          suggestions: [
+            {
+              label: "fmt",
+              kind: monaco.languages.CompletionItemKind.Module,
+              insertText: "fmt",
+              detail: "Package fmt",
+              documentation:
+                "Package fmt implements formatted I/O with functions analogous to C's printf and scanf.",
+              range: new monaco.Range(
+                position.lineNumber,
+                position.column - match[0].length,
+                position.lineNumber,
+                position.column,
+              ),
+              additionalTextEdits: additionalTextEdits,
+            },
+          ],
+        };
+      },
+    });
+
+    // Helper function to find the range of the existing import block
+    function findImportBlockRange(text) {
+      var importBlockRegex = /import\s*\(\s*([^)]+)\s*\)/;
+      var match = text.match(importBlockRegex);
+      if (match) {
+        var start = text.indexOf(match[0]);
+        var end = start + match[0].length;
+        var linesBefore = text.substring(0, start).split("\n");
+        var startLine = linesBefore.length;
+        var startColumn = linesBefore[linesBefore.length - 1].length + 1;
+        var linesAfter = text.substring(0, end).split("\n");
+        var endLine = linesAfter.length;
+        var endColumn = linesAfter[linesAfter.length - 1].length + 1;
+        return new monaco.Range(startLine, startColumn, endLine, endColumn);
+      }
+      return null;
+    }
+
+    // Helper function to find the position to insert a new import block
+    function findInsertPosition(text) {
+      var packageLineRegex = /package\s+\w+/;
+      var match = text.match(packageLineRegex);
+      if (match) {
+        var lines = text.split("\n");
+        var packageLineIndex = lines.findIndex((line) =>
+          line.match(packageLineRegex),
+        );
+        return { line: packageLineIndex + 2, column: 1 }; // Insert after the package line
+      }
+      return { line: 1, column: 1 }; // Default to the top of the file
+    }
   });
 
   createEffect(() => {

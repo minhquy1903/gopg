@@ -1,10 +1,5 @@
-export const helloWorld = 
-`package main
-
-import (
-	"fmt"
-)
+export const helloWorld = `package main
 
 func main() {
-	fmt.Println("Hello World")
-}`
+
+}`;
