@@ -15,7 +15,6 @@ const IMPORTED_PACKAEG = {
 
 self.MonacoEnvironment = {
   getWorker(_, label) {
-    console.log("label: ", label);
     if (label === "json") {
       return new jsonWorker();
     }
@@ -67,7 +66,7 @@ export default function Monaco() {
 
     monaco.languages.registerCompletionItemProvider("go", {
       provideCompletionItems: function (model, position) {
-        var textUntilPosition = model.getValueInRange({
+        const textUntilPosition = model.getValueInRange({
           startLineNumber: 1,
           startColumn: 1,
           endLineNumber: position.lineNumber,
@@ -75,15 +74,13 @@ export default function Monaco() {
         });
 
         // Check if the user is typing "fm"
-        var match = textUntilPosition.match(/fm/);
+        const match = textUntilPosition.match(/fm/);
         if (!match) {
           return { suggestions: [] };
         }
 
         // Get the entire code
-        var fullText = model.getValue();
-
-        console.log({ fullText });
+        const fullText = model.getValue();
 
         // Check if there is an existing import block
         const additionalTextEdits = [];
@@ -95,15 +92,16 @@ export default function Monaco() {
           fullText,
         );
 
-        if (!importedPackages.find((el) => el === "fmt")) {
-          importedPackages.push("fmt");
-        }
+        console.log("adsa", importedPackages);
 
         switch (Boolean(importedPackages.length)) {
           case IMPORTED_PACKAEG.EXIST:
+            if (importedPackages.find((el) => el === "fmt")) {
+              break;
+            }
+            importedPackages.push("fmt");
             // If an import block exists, append the new package to it
-            var importBlockRange = findImportBlockRange(fullText);
-            console.log({ importBlockRange });
+            const importBlockRange = findImportBlockRange(fullText);
 
             const newImports = importedPackages.reduce((s, item, index) => {
               if (index === importedPackages.length - 1) return `${s}"${item}"`;
@@ -120,15 +118,16 @@ export default function Monaco() {
             const insertPosition = findInsertPosition(fullText);
             additionalTextEdits.push({
               range: new monaco.Range(
-                insertPosition.line,
+                insertPosition.line + 1,
                 1,
-                insertPosition.line,
+                insertPosition.line + 1,
                 1,
               ),
               text: 'import (\n\t"fmt"\n)\n\n',
             });
             break;
           default:
+            return;
         }
 
         return {
@@ -155,22 +154,20 @@ export default function Monaco() {
 
     // Helper function to find the range of the existing import block
     function findImportBlockRange(text) {
-      var importBlockRegex =
+      const importBlockRegex =
         /import\s*\(\s*([\s\S]*?)\s*\)|import\s+"([^"]+)"/g;
-      var match = text.match(importBlockRegex);
-      console.log({ match });
-      if (match) {
-        var start = text.indexOf(match[0]);
-        console.log({ start });
+      const match = text.match(importBlockRegex);
 
-        var end = start + match[0].length;
-        console.log({ end });
-        var linesBefore = text.substring(0, start).split("\n");
-        var startLine = linesBefore.length;
-        var startColumn = linesBefore[linesBefore.length - 1].length + 1;
-        var linesAfter = text.substring(0, end).split("\n");
-        var endLine = linesAfter.length;
-        var endColumn = linesAfter[linesAfter.length - 1].length + 1;
+      if (match) {
+        const start = text.indexOf(match[0]);
+        const end = start + match[0].length;
+
+        const linesBefore = text.substring(0, start).split("\n");
+        const startLine = linesBefore.length;
+        const startColumn = linesBefore[linesBefore.length - 1].length + 1;
+        const linesAfter = text.substring(0, end).split("\n");
+        const endLine = linesAfter.length;
+        const endColumn = linesAfter[linesAfter.length - 1].length + 1;
         return new monaco.Range(startLine, startColumn, endLine, endColumn);
       }
       return null;
@@ -193,16 +190,17 @@ export default function Monaco() {
 
     // Helper function to find the position to insert a new import block
     function findInsertPosition(text) {
-      var packageLineRegex = /package\s+\w+/;
-      var match = text.match(packageLineRegex);
+      const packageLineRegex = /package\s+\w+/;
+      const match = text.match(packageLineRegex);
       if (match) {
-        var lines = text.split("\n");
-        var packageLineIndex = lines.findIndex((line) =>
+        const lines = text.split("\n");
+        const packageLineIndex = lines.findIndex((line) =>
           line.match(packageLineRegex),
         );
+
         return { line: packageLineIndex + 2, column: 1 }; // Insert after the package line
       }
-      return { line: 1, column: 1 }; // Default to the top of the file
+      return { line: 3, column: 1 }; // Default to the top of the file
     }
   });
 
