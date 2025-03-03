@@ -8,6 +8,11 @@ import htmlWorker from "monaco-editor/esm/vs/language/html/html.worker?worker";
 import tsWorker from "monaco-editor/esm/vs/language/typescript/ts.worker?worker";
 import { helloWorld } from "../constant/template";
 
+const IMPORTED_PACKAEG = {
+  EXIST: true,
+  NOT_EXIST: false,
+};
+
 self.MonacoEnvironment = {
   getWorker(_, label) {
     console.log("label: ", label);
@@ -78,33 +83,52 @@ export default function Monaco() {
         // Get the entire code
         var fullText = model.getValue();
 
+        console.log({ fullText });
+
         // Check if there is an existing import block
-        var importBlockRegex = /import\s*\(\s*([^)]+)\s*\)/;
-        var importBlockMatch = fullText.match(importBlockRegex);
+        const additionalTextEdits = [];
+        const importBlockRegex =
+          /import\s*\(\s*([\s\S]*?)\s*\)|import\s+"([^"]+)"/g;
 
-        var additionalTextEdits = [];
-        if (importBlockMatch) {
-          // If an import block exists, append the new package to it
-          var importBlockRange = findImportBlockRange(fullText);
-          var existingImports = importBlockMatch[1].trim();
-          var newImports = existingImports + '\n\t"fmt"';
+        const importedPackages = getImportedPackages(
+          importBlockRegex,
+          fullText,
+        );
 
-          additionalTextEdits.push({
-            range: importBlockRange,
-            text: `import (\n\t${newImports}\n)`,
-          });
-        } else {
-          // If no import block exists, create a new one
-          var insertPosition = findInsertPosition(fullText);
-          additionalTextEdits.push({
-            range: new monaco.Range(
-              insertPosition.line,
-              1,
-              insertPosition.line,
-              1,
-            ),
-            text: 'import (\n\t"fmt"\n)\n\n',
-          });
+        if (!importedPackages.find((el) => el === "fmt")) {
+          importedPackages.push("fmt");
+        }
+
+        switch (Boolean(importedPackages.length)) {
+          case IMPORTED_PACKAEG.EXIST:
+            // If an import block exists, append the new package to it
+            var importBlockRange = findImportBlockRange(fullText);
+            console.log({ importBlockRange });
+
+            const newImports = importedPackages.reduce((s, item, index) => {
+              if (index === importedPackages.length - 1) return `${s}"${item}"`;
+              return `${s}"${item}"\n\t`;
+            }, "");
+
+            additionalTextEdits.push({
+              range: importBlockRange,
+              text: `import (\n\t${newImports}\n)`,
+            });
+            break;
+          case IMPORTED_PACKAEG.NOT_EXIST:
+            // If no import block exists, create a new one
+            const insertPosition = findInsertPosition(fullText);
+            additionalTextEdits.push({
+              range: new monaco.Range(
+                insertPosition.line,
+                1,
+                insertPosition.line,
+                1,
+              ),
+              text: 'import (\n\t"fmt"\n)\n\n',
+            });
+            break;
+          default:
         }
 
         return {
@@ -131,11 +155,16 @@ export default function Monaco() {
 
     // Helper function to find the range of the existing import block
     function findImportBlockRange(text) {
-      var importBlockRegex = /import\s*\(\s*([^)]+)\s*\)/;
+      var importBlockRegex =
+        /import\s*\(\s*([\s\S]*?)\s*\)|import\s+"([^"]+)"/g;
       var match = text.match(importBlockRegex);
+      console.log({ match });
       if (match) {
         var start = text.indexOf(match[0]);
+        console.log({ start });
+
         var end = start + match[0].length;
+        console.log({ end });
         var linesBefore = text.substring(0, start).split("\n");
         var startLine = linesBefore.length;
         var startColumn = linesBefore[linesBefore.length - 1].length + 1;
@@ -145,6 +174,21 @@ export default function Monaco() {
         return new monaco.Range(startLine, startColumn, endLine, endColumn);
       }
       return null;
+    }
+
+    function getImportedPackages(regex, code) {
+      const matches = [];
+      let match;
+      while ((match = regex.exec(code)) !== null) {
+        if (match[2]) {
+          matches.push(match[2]); // Single-line import
+        } else if (match[1]) {
+          const multiLineImports = match[1].match(/"([^"]+)"/g) || [];
+          matches.push(...multiLineImports.map((pkg) => pkg.replace(/"/g, ""))); // Multi-line import
+        }
+      }
+
+      return matches;
     }
 
     // Helper function to find the position to insert a new import block
@@ -212,7 +256,7 @@ export default function Monaco() {
           <li>
             <select name="template-select" id="template-select">
               Theme
-              <option value="hello_world">Hello world</option>
+              <option value="hello_world"></option>
               <option value="http">HTTP</option>
               <option value="tcp">TCP</option>
             </select>
