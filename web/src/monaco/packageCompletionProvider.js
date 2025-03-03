@@ -6,7 +6,7 @@ import {
 } from "../constant/monaco";
 import * as monaco from "monaco-editor";
 
-export function getProvideCompletionItems(model, position) {
+export function packageCompletionProvider(model, position) {
   let textUntilPosition = model.getValueInRange({
     startLineNumber: position.lineNumber,
     startColumn: 0,

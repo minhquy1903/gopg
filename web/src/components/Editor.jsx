@@ -3,7 +3,8 @@ import * as monaco from "monaco-editor";
 
 import editorWorker from "monaco-editor/esm/vs/editor/editor.worker?worker";
 import { helloWorld } from "../constant/template";
-import { getProvideCompletionItems } from "../monaco/registerCompletionProvider";
+import { packageCompletionProvider } from "../monaco/packageCompletionProvider";
+import { keywordCompeletionProvider } from "../monaco/keywordCompletionProvider";
 
 self.MonacoEnvironment = {
   getWorker(_, label) {
@@ -26,7 +27,7 @@ const apiRunCode = (code) => {
 };
 
 export default function Monaco() {
-  const [theme, setTheme] = createSignal("vs");
+  const [theme, setTheme] = createSignal("vs-dark");
 
   let editor;
 
@@ -45,7 +46,12 @@ export default function Monaco() {
     });
 
     monaco.languages.registerCompletionItemProvider("go", {
-      provideCompletionItems: getProvideCompletionItems,
+      provideCompletionItems: packageCompletionProvider,
+    });
+
+    // Register a completion provider for Go
+    monaco.languages.registerCompletionItemProvider("go", {
+      provideCompletionItems: keywordCompeletionProvider,
     });
   });
 
