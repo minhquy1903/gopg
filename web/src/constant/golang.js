@@ -682,7 +682,7 @@ export const GO_KEYWORD = [
   "var",
 ];
 
-const GO_PRIMITIVE_TYPE = [
+export const GO_PRIMITIVE_TYPE = [
   "bool",
   "byte",
   "complex64",

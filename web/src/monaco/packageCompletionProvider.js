@@ -1,4 +1,4 @@
-import { ALL_GO_PKG } from "../constant/allGoPackage";
+import { ALL_GO_PKG } from "../constant/golang";
 import {
   IMPORT_BLOCK_REGEX,
   IMPORTED_PACKAEG,
