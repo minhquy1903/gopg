@@ -1,0 +1,17 @@
+import { ALL_GO_PKG, GO_PRIMITIVE_TYPE, GO_KEYWORD } from "./golang";
+import {
+  IMPORT_BLOCK_REGEX,
+  PACKAGE_LINE_REGEX,
+  IMPORTED_PACKAEG,
+} from "./monaco";
+import { HELLO_WORLD } from "./template";
+
+export {
+  ALL_GO_PKG,
+  GO_PRIMITIVE_TYPE,
+  GO_KEYWORD,
+  IMPORT_BLOCK_REGEX,
+  PACKAGE_LINE_REGEX,
+  HELLO_WORLD,
+  IMPORTED_PACKAEG,
+};

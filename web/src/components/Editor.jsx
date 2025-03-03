@@ -1,10 +1,12 @@
 import { createEffect, onMount, createSignal } from "solid-js";
 import * as monaco from "monaco-editor";
-
 import editorWorker from "monaco-editor/esm/vs/editor/editor.worker?worker";
-import { helloWorld } from "../constant/template";
-import { packageCompletionProvider } from "../monaco/packageCompletionProvider";
-import { keywordCompeletionProvider } from "../monaco/keywordCompletionProvider";
+
+import {
+  packageCompletionProvider,
+  keywordCompeletionProvider,
+} from "../monaco-provider";
+import { HELLO_WORLD } from "../constant/";
 
 self.MonacoEnvironment = {
   getWorker(_, label) {
@@ -35,7 +37,7 @@ export default function Monaco() {
     const editorRef = document.getElementById("editor");
     editor = monaco.editor.create(editorRef, {
       language: "go",
-      value: helloWorld,
+      value: HELLO_WORLD,
     });
 
     editor.updateOptions({

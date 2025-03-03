@@ -1,5 +1,5 @@
 import { languages } from "monaco-editor";
-import { GO_KEYWORD, GO_PRIMITIVE_TYPE } from "../constant/golang";
+import { GO_KEYWORD, GO_PRIMITIVE_TYPE } from "../constant";
 
 export function keywordCompeletionProvider() {
   const suggestions = [];

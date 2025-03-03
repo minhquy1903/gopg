@@ -1,9 +1,9 @@
-import { ALL_GO_PKG } from "../constant/golang";
 import {
   IMPORT_BLOCK_REGEX,
   IMPORTED_PACKAEG,
   PACKAGE_LINE_REGEX,
-} from "../constant/monaco";
+  ALL_GO_PKG,
+} from "../constant";
 import * as monaco from "monaco-editor";
 
 export function packageCompletionProvider(model, position) {

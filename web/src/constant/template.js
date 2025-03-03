@@ -1,4 +1,4 @@
-export const helloWorld = `package main
+export const HELLO_WORLD = `package main
 
 func main() {
 
