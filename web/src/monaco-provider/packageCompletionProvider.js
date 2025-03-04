@@ -1,12 +1,14 @@
+import * as monaco from "monaco-editor";
 import {
   IMPORT_BLOCK_REGEX,
   IMPORTED_PACKAEG,
   PACKAGE_LINE_REGEX,
   ALL_GO_PKG,
 } from "../constant";
-import * as monaco from "monaco-editor";
+import { getLastWord } from "../utils";
 
 export function packageCompletionProvider(model, position) {
+  console.log("packageCompletionProvider");
   let textUntilPosition = model.getValueInRange({
     startLineNumber: position.lineNumber,
     startColumn: 0,
@@ -27,8 +29,6 @@ export function packageCompletionProvider(model, position) {
   // Get the entire code
   const fullText = model.getValue();
 
-  // Check if there is an existing import block
-
   const importedPackages = getImportedPackages(IMPORT_BLOCK_REGEX, fullText);
   const importBlockRange = findImportBlockRange(fullText);
   const insertPosition = findInsertPosition(fullText);
@@ -42,6 +42,7 @@ export function packageCompletionProvider(model, position) {
         if (currentImportedPackages.find((el) => el === path)) {
           break;
         }
+
         currentImportedPackages.push(path);
         currentImportedPackages.sort((a, b) =>
           a.localeCompare(b, undefined, { sensitivity: "base" }),
@@ -59,6 +60,7 @@ export function packageCompletionProvider(model, position) {
           text: `import (\n\t${newImports}\n)`,
         });
         break;
+
       case IMPORTED_PACKAEG.NOT_EXIST:
         // If no import block exists, create a new one
         additionalTextEdits.push({
@@ -71,6 +73,7 @@ export function packageCompletionProvider(model, position) {
           text: `import (\n\t"${path}"\n)\n\n`,
         });
         break;
+
       default:
         return;
     }
@@ -80,6 +83,7 @@ export function packageCompletionProvider(model, position) {
       kind: monaco.languages.CompletionItemKind.Module,
       insertText: name,
       detail: `Package ${name}`,
+      // TODO: Add documentation
       documentation:
         "Package fmt implements formatted I/O with functions analogous to C's printf and scanf.",
       range: new monaco.Range(
@@ -144,9 +148,4 @@ function findInsertPosition(text) {
     return { line: packageLineIndex + 2, column: 1 }; // Insert after the package line
   }
   return { line: 3, column: 1 }; // Default to the top of the file
-}
-
-function getLastWord(str) {
-  const match = str.match(/\b\w+$/);
-  return match ? match[0] : null;
 }

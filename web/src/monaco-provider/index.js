@@ -1,3 +1,8 @@
 import { keywordCompeletionProvider } from "./keywordCompletionProvider";
 import { packageCompletionProvider } from "./packageCompletionProvider";
-export { keywordCompeletionProvider, packageCompletionProvider };
+import { inferCompletionProvider } from "./inferCompletionProvider";
+export {
+  keywordCompeletionProvider,
+  packageCompletionProvider,
+  inferCompletionProvider,
+};

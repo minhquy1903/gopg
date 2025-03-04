@@ -5,6 +5,7 @@ import editorWorker from "monaco-editor/esm/vs/editor/editor.worker?worker";
 import {
   packageCompletionProvider,
   keywordCompeletionProvider,
+  inferCompletionProvider,
 } from "../monaco-provider";
 import { HELLO_WORLD } from "../constant/";
 
@@ -47,13 +48,19 @@ export default function Monaco() {
       theme: theme,
     });
 
+    // Register a package completion provider for Go
     monaco.languages.registerCompletionItemProvider("go", {
       provideCompletionItems: packageCompletionProvider,
     });
 
-    // Register a completion provider for Go
+    // Register a keyword completion provider for Go
     monaco.languages.registerCompletionItemProvider("go", {
       provideCompletionItems: keywordCompeletionProvider,
+    });
+
+    // Register a infer completion provider for Go
+    monaco.languages.registerCompletionItemProvider("go", {
+      provideCompletionItems: inferCompletionProvider,
     });
   });
 

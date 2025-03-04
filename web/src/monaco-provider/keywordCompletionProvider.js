@@ -2,6 +2,7 @@ import { languages } from "monaco-editor";
 import { GO_KEYWORD, GO_PRIMITIVE_TYPE } from "../constant";
 
 export function keywordCompeletionProvider() {
+  console.log("keywordCompeletionProvider");
   const suggestions = [];
 
   // Add keywords
